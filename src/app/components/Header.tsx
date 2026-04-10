@@ -1,17 +1,20 @@
-import { Link, useLocation } from "react-router";
-import { GraduationCap, Menu, X, LogIn } from "lucide-react";
-import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router";
+import { GraduationCap, Menu, X, LogIn, LayoutDashboard, LogOut } from "lucide-react";
+import { useEffect, useState } from "react";
 import { LoginModal } from "./LoginModal";
+import { api, clearStoredAuth, getStoredAuth } from "../pages/services/api";
 
 export function Header() {
+  const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [loginType, setLoginType] = useState<"student" | "company">("student");
+  const [authUser, setAuthUser] = useState<any>(null);
 
   const navLinks = [
     { name: "Home", path: "/" },
-    { name: "About Placement Cell", path: "/about" },
+    { name: "Jobs", path: "/jobs" },
     { name: "Recruiters", path: "/recruiters" },
     { name: "Students", path: "/students" },
     { name: "Statistics", path: "/statistics" },
@@ -20,6 +23,41 @@ export function Header() {
 
   const isActive = (path: string) => {
     return location.pathname === path;
+  };
+
+  useEffect(() => {
+    setAuthUser(getStoredAuth());
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setAuthUser(getStoredAuth());
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  const dashboardPath = authUser?.role === "ADMIN"
+    ? "/admin-dashboard"
+    : authUser?.role === "COMPANY"
+      ? "/company-dashboard"
+      : authUser?.role === "STUDENT"
+        ? "/student-dashboard"
+        : null;
+
+  const dashboardLabel = authUser?.role === "ADMIN"
+    ? "Admin Dashboard"
+    : authUser?.role === "COMPANY"
+      ? "Company Dashboard"
+      : "Student Dashboard";
+
+  const handleLogout = () => {
+    api.logout().catch(() => {});
+    clearStoredAuth();
+    setAuthUser(null);
+    setMobileMenuOpen(false);
+    navigate("/", { replace: true });
   };
 
   return (
@@ -53,26 +91,51 @@ export function Header() {
               </Link>
             ))}
             <div className="ml-2 flex gap-2">
-              <button
-                onClick={() => {
-                  setLoginModalOpen(true);
-                  setLoginType("student");
-                }}
-                className="px-4 py-2 rounded-md text-primary border border-primary hover:bg-primary hover:text-white transition-colors inline-flex items-center gap-2"
-              >
-                <LogIn className="w-4 h-4" />
-                Student
-              </button>
-              <button
-                onClick={() => {
-                  setLoginModalOpen(true);
-                  setLoginType("company");
-                }}
-                className="px-4 py-2 rounded-md bg-accent text-accent-foreground hover:bg-accent/90 transition-colors inline-flex items-center gap-2"
-              >
-                <LogIn className="w-4 h-4" />
-                Company
-              </button>
+              {dashboardPath ? (
+                <>
+                  <Link
+                    to={dashboardPath}
+                    className={`px-4 py-2 rounded-md transition-colors inline-flex items-center gap-2 ${
+                      isActive(dashboardPath)
+                        ? "bg-primary text-white"
+                        : "text-primary border border-primary hover:bg-primary hover:text-white"
+                    }`}
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    {dashboardLabel}
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="px-4 py-2 rounded-md bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors inline-flex items-center gap-2"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => {
+                      setLoginModalOpen(true);
+                      setLoginType("student");
+                    }}
+                    className="px-4 py-2 rounded-md text-primary border border-primary hover:bg-primary hover:text-white transition-colors inline-flex items-center gap-2"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    Student
+                  </button>
+                  <button
+                    onClick={() => {
+                      setLoginModalOpen(true);
+                      setLoginType("company");
+                    }}
+                    className="px-4 py-2 rounded-md bg-accent text-accent-foreground hover:bg-accent/90 transition-colors inline-flex items-center gap-2"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    Company
+                  </button>
+                </>
+              )}
             </div>
           </nav>
 
@@ -102,6 +165,52 @@ export function Header() {
                 {link.name}
               </Link>
             ))}
+            {dashboardPath && (
+              <Link
+                to={dashboardPath}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`block px-4 py-3 rounded-md transition-colors ${
+                  isActive(dashboardPath)
+                    ? "bg-primary text-white"
+                    : "text-primary hover:bg-slate-100"
+                }`}
+              >
+                {dashboardLabel}
+              </Link>
+            )}
+            {dashboardPath ? (
+              <button
+                onClick={handleLogout}
+                className="mt-2 block w-full rounded-md bg-slate-100 px-4 py-3 text-left text-slate-700 hover:bg-slate-200 transition-colors"
+              >
+                Logout
+              </button>
+            ) : (
+              <div className="mt-2 grid gap-2">
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    setLoginModalOpen(true);
+                    setLoginType("student");
+                  }}
+                  className="rounded-md border border-primary px-4 py-3 text-primary hover:bg-primary hover:text-white transition-colors inline-flex items-center gap-2"
+                >
+                  <LogIn className="w-4 h-4" />
+                  Student Login
+                </button>
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    setLoginModalOpen(true);
+                    setLoginType("company");
+                  }}
+                  className="rounded-md bg-accent px-4 py-3 text-accent-foreground hover:bg-accent/90 transition-colors inline-flex items-center gap-2"
+                >
+                  <LogIn className="w-4 h-4" />
+                  Company Login
+                </button>
+              </div>
+            )}
           </nav>
         )}
       </div>

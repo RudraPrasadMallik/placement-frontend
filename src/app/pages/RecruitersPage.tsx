@@ -1,33 +1,79 @@
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
-import { Building2, Users, Award, TrendingUp, CheckCircle, XCircle } from "lucide-react";
+import { Building2, Users, Award, TrendingUp, CheckCircle, XCircle, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { api } from "./services/api";
 
 export function RecruitersPage() {
+  const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,15}$/;
   const [formData, setFormData] = useState({
     companyName: "",
     industry: "",
+    customIndustry: "",
     contactPerson: "",
     email: "",
+    password: "",
     phone: "",
     website: "",
-    positions: "",
-    package: "",
-    location: "",
-    jobDescription: "",
   });
 
-  const [submitted, setSubmitted] = useState(false);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const fieldLabels = {
+    companyName: "Company Name",
+    industry: "Industry",
+    customIndustry: "Custom Industry",
+    contactPerson: "Contact Person",
+    email: "Email Address",
+    password: "Password",
+    phone: "Phone Number",
+    website: "Company Website",
+  };
+
+  const getInputClassName = (fieldName) =>
+    `w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
+      fieldErrors[fieldName] ? "border-red-400 bg-red-50" : "border-slate-300"
+    }`;
+
+  const renderFieldError = (fieldName) =>
+    fieldErrors[fieldName] ? (
+      <p className="mt-1 text-sm text-red-600">{fieldErrors[fieldName]}</p>
+    ) : null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setFieldErrors({});
     setLoading(true);
     
     try {
+      if (formData.industry === "Other" && !formData.customIndustry.trim()) {
+        setFieldErrors({ customIndustry: "Please enter the industry name" });
+        setError("Please fix the highlighted fields.");
+        setLoading(false);
+        return;
+      }
+
+      if (formData.password.trim().length < 8 || formData.password.trim().length > 15) {
+        setFieldErrors({ password: "Password must be between 8 and 15 characters" });
+        setError("Please fix the highlighted fields.");
+        setLoading(false);
+        return;
+      }
+
+      if (!passwordPattern.test(formData.password.trim())) {
+        setFieldErrors({
+          password: "Use 1 uppercase letter, 1 number, and 1 special character",
+        });
+        setError("Please fix the highlighted fields.");
+        setLoading(false);
+        return;
+      }
+
       // Map industry values to match backend expectations
       const industryMap = {
         "IT": "Information Technology",
@@ -38,38 +84,47 @@ export function RecruitersPage() {
         "Other": "Other"
       };
       
-      const submitData = {
-        companyName: formData.companyName,
-        industry: industryMap[formData.industry] || formData.industry,
-        contactPerson: formData.contactPerson,
-        email: formData.email,
-        phone: formData.phone,
-        website: formData.website,
-        positions: parseInt(formData.positions),
-        salaryPackage: formData.package,
-        location: formData.location,
-        jobDescription: formData.jobDescription
-      };
+      const submitData = new FormData();
+      submitData.append("companyName", formData.companyName);
+      submitData.append(
+        "industry",
+        formData.industry === "Other"
+          ? formData.customIndustry.trim()
+          : industryMap[formData.industry] || formData.industry
+      );
+      submitData.append("contactPerson", formData.contactPerson);
+      submitData.append("email", formData.email);
+      submitData.append("password", formData.password);
+      submitData.append("phone", formData.phone);
+      submitData.append("website", formData.website);
       
-      await api.registerCompany(submitData);
+      const response = await api.registerCompany(submitData);
       
-      setSubmitted(true);
+      setSuccessMessage(
+        response?.message || "Registration submitted successfully! We'll contact you soon."
+      );
+      setShowSuccessPopup(true);
+      setError("");
+      setFieldErrors({});
       setFormData({
         companyName: "",
         industry: "",
+        customIndustry: "",
         contactPerson: "",
         email: "",
+        password: "",
         phone: "",
         website: "",
-        positions: "",
-        package: "",
-        location: "",
-        jobDescription: "",
       });
-      
-      setTimeout(() => setSubmitted(false), 3000);
+      setShowPassword(false);
     } catch (err) {
-      setError(err.message || "Registration failed. Please try again.");
+      const nextFieldErrors = err.fieldErrors || {};
+      setFieldErrors(nextFieldErrors);
+      if (Object.keys(nextFieldErrors).length > 0) {
+        setError("Please fix the highlighted fields.");
+      } else {
+        setError(err.message || "Registration failed. Please try again.");
+      }
       setTimeout(() => setError(""), 5000);
     } finally {
       setLoading(false);
@@ -152,13 +207,6 @@ export function RecruitersPage() {
           <div className="bg-white rounded-xl shadow-lg p-8 border border-slate-200">
             <h2 className="text-2xl font-bold text-slate-900 mb-6">Company Registration Form</h2>
             
-            {submitted && (
-              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
-                <CheckCircle className="w-5 h-5 text-green-600" />
-                <p className="text-green-800">Registration submitted successfully! We'll contact you soon.</p>
-              </div>
-            )}
-            
             {error && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
                 <XCircle className="w-5 h-5 text-red-600" />
@@ -176,10 +224,14 @@ export function RecruitersPage() {
                     type="text"
                     required
                     value={formData.companyName}
-                    onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    onChange={(e) => {
+                      setFormData({ ...formData, companyName: e.target.value });
+                      setFieldErrors((prev) => ({ ...prev, companyName: "" }));
+                    }}
+                    className={getInputClassName("companyName")}
                     placeholder="ABC Corporation"
                   />
+                  {renderFieldError("companyName")}
                 </div>
 
                 <div>
@@ -189,8 +241,15 @@ export function RecruitersPage() {
                   <select
                     required
                     value={formData.industry}
-                    onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    onChange={(e) => {
+                      setFormData({
+                        ...formData,
+                        industry: e.target.value,
+                        customIndustry: e.target.value === "Other" ? formData.customIndustry : "",
+                      });
+                      setFieldErrors((prev) => ({ ...prev, industry: "", customIndustry: "" }));
+                    }}
+                    className={getInputClassName("industry")}
                   >
                     <option value="">Select Industry</option>
                     <option value="IT">Information Technology</option>
@@ -200,7 +259,28 @@ export function RecruitersPage() {
                     <option value="Healthcare">Healthcare</option>
                     <option value="Other">Other</option>
                   </select>
+                  {renderFieldError("industry")}
                 </div>
+
+                {formData.industry === "Other" && (
+                  <div>
+                    <label className="block text-slate-700 mb-2">
+                      Enter Industry Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.customIndustry}
+                      onChange={(e) => {
+                        setFormData({ ...formData, customIndustry: e.target.value });
+                        setFieldErrors((prev) => ({ ...prev, customIndustry: "" }));
+                      }}
+                      className={getInputClassName("customIndustry")}
+                      placeholder="Enter your industry"
+                    />
+                    {renderFieldError("customIndustry")}
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-slate-700 mb-2">
@@ -210,10 +290,14 @@ export function RecruitersPage() {
                     type="text"
                     required
                     value={formData.contactPerson}
-                    onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    onChange={(e) => {
+                      setFormData({ ...formData, contactPerson: e.target.value });
+                      setFieldErrors((prev) => ({ ...prev, contactPerson: "" }));
+                    }}
+                    className={getInputClassName("contactPerson")}
                     placeholder="John Doe"
                   />
+                  {renderFieldError("contactPerson")}
                 </div>
 
                 <div>
@@ -224,10 +308,45 @@ export function RecruitersPage() {
                     type="email"
                     required
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    onChange={(e) => {
+                      setFormData({ ...formData, email: e.target.value });
+                      setFieldErrors((prev) => ({ ...prev, email: "" }));
+                    }}
+                    className={getInputClassName("email")}
                     placeholder="hr@company.com"
                   />
+                  {renderFieldError("email")}
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 mb-2">
+                    Password <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      required
+                      value={formData.password}
+                      onChange={(e) => {
+                        setFormData({ ...formData, password: e.target.value });
+                        setFieldErrors((prev) => ({ ...prev, password: "" }));
+                      }}
+                      className={`${getInputClassName("password")} pr-12`}
+                      placeholder="Create a strong password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-500 hover:text-slate-700"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
+                  <p className="mt-1 text-sm text-slate-500">
+                    8-15 characters with 1 uppercase letter, 1 number, and 1 special character.
+                  </p>
+                  {renderFieldError("password")}
                 </div>
 
                 <div>
@@ -238,10 +357,14 @@ export function RecruitersPage() {
                     type="tel"
                     required
                     value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    onChange={(e) => {
+                      setFormData({ ...formData, phone: e.target.value });
+                      setFieldErrors((prev) => ({ ...prev, phone: "" }));
+                    }}
+                    className={getInputClassName("phone")}
                     placeholder="+91 9876543210"
                   />
+                  {renderFieldError("phone")}
                 </div>
 
                 <div>
@@ -251,67 +374,23 @@ export function RecruitersPage() {
                   <input
                     type="url"
                     value={formData.website}
-                    onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    onChange={(e) => {
+                      setFormData({ ...formData, website: e.target.value });
+                      setFieldErrors((prev) => ({ ...prev, website: "" }));
+                    }}
+                    className={getInputClassName("website")}
                     placeholder="https://company.com"
                   />
+                  {renderFieldError("website")}
                 </div>
 
-                <div>
-                  <label className="block text-slate-700 mb-2">
-                    Number of Positions <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min="1"
-                    value={formData.positions}
-                    onChange={(e) => setFormData({ ...formData, positions: e.target.value })}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                    placeholder="5"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-slate-700 mb-2">
-                    Package (LPA) <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.package}
-                    onChange={(e) => setFormData({ ...formData, package: e.target.value })}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                    placeholder="8-12 LPA"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-slate-700 mb-2">
-                    Job Location <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                    placeholder="Bangalore, Hyderabad"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-slate-700 mb-2">
-                    Job Description <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    required
-                    rows={4}
-                    value={formData.jobDescription}
-                    onChange={(e) => setFormData({ ...formData, jobDescription: e.target.value })}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                    placeholder="Brief description of the role, responsibilities, and requirements..."
-                  ></textarea>
+                <div className="md:col-span-2 rounded-xl border border-dashed border-primary/30 bg-primary/5 p-5">
+                  <h3 className="text-base font-semibold text-slate-900">Next step after approval</h3>
+                  <p className="mt-2 text-sm text-slate-600">
+                    Once the admin approves your company account, you can log in to the company dashboard,
+                    edit your registration details, and create jobs with job name, application link,
+                    description, and JD upload.
+                  </p>
                 </div>
               </div>
 
@@ -368,6 +447,25 @@ export function RecruitersPage() {
       </section>
 
       <Footer />
+
+      {showSuccessPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl border border-slate-200 text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+              <CheckCircle className="h-8 w-8 text-green-600" />
+            </div>
+            <h3 className="text-2xl font-bold text-slate-900">Registration Successful</h3>
+            <p className="mt-3 text-slate-600">{successMessage}</p>
+            <button
+              type="button"
+              onClick={() => setShowSuccessPopup(false)}
+              className="mt-6 inline-flex min-w-32 items-center justify-center rounded-lg bg-primary px-6 py-3 text-white shadow-lg transition-colors hover:bg-primary/90"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -25,7 +25,7 @@ export function Footer() {
               </li>
               <li>
                 <Link to="/about" className="text-slate-300 hover:text-accent transition-colors text-sm">
-                  About Us
+                  About Placement Cell
                 </Link>
               </li>
               <li>
