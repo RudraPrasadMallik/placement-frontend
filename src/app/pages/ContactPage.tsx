@@ -245,16 +245,16 @@ export function ContactPage() {
                       <User className="w-8 h-8 text-white" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-slate-900">Dr. Sumit Choudhury</h3>
+                      <h3 className="font-bold text-slate-900">Mr. Alok Prasad Mishra</h3>
                       <p className="text-slate-600 text-sm mb-2">Chief Placement Officer</p>
                       <div className="space-y-1 text-sm">
                         <div className="flex items-center gap-2 text-slate-600">
                           <Mail className="w-4 h-4 text-primary" />
-                          <span>sumitchoudhury@eatm.edu</span>
+                          <span>alokprasad@eatm.edu</span>
                         </div>
                         <div className="flex items-center gap-2 text-slate-600">
                           <Phone className="w-4 h-4 text-primary" />
-                          <span>+91 9876543210</span>
+                          <span>+91 7008156776</span>
                         </div>
                       </div>
                     </div>
@@ -274,7 +274,7 @@ export function ContactPage() {
                         </div>
                         <div className="flex items-center gap-2 text-slate-600">
                           <Phone className="w-4 h-4 text-accent" />
-                          <span>+91 9876543211</span>
+                          <span>+91 7008288297</span>
                         </div>
                       </div>
                     </div>
@@ -285,16 +285,16 @@ export function ContactPage() {
                       <User className="w-8 h-8 text-white" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-slate-900">Mr. Ajay Kumar Samal</h3>
+                      <h3 className="font-bold text-slate-900">Mr. Satyam Mohanty</h3>
                       <p className="text-slate-600 text-sm mb-2">Training & Development Coordinator</p>
                       <div className="space-y-1 text-sm">
                         <div className="flex items-center gap-2 text-slate-600">
                           <Mail className="w-4 h-4 text-secondary" />
-                          <span>ajaysamal@eatm.edu</span>
+                          <span>satyammohanty@eatm.edu</span>
                         </div>
                         <div className="flex items-center gap-2 text-slate-600">
                           <Phone className="w-4 h-4 text-secondary" />
-                          <span>+91 9876543212</span>
+                          <span>+91 9853060726</span>
                         </div>
                       </div>
                     </div>

@@ -28,7 +28,7 @@ export function HomePage() {
           const placementPercentage = ((latestYear.placed / latestYear.total) * 100).toFixed(0);
           
           setStatsData({
-            highestPackage: "₹45 LPA", // Keep static or fetch from API if available
+            highestPackage: "₹24 LPA", // Keep static or fetch from API if available
             averagePackage: `₹${latestYear.avgPackage} LPA`,
             companiesVisited: "150+", // Keep static or fetch from API if available
             studentsPlaced: `${placementPercentage}%`
@@ -91,7 +91,7 @@ export function HomePage() {
             <div className="hidden lg:block">
               <div className="rounded-xl overflow-hidden shadow-2xl">
                 <ImageWithFallback
-                  src="https://images.unsplash.com/photo-1758518732175-5d608ba3abdf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3Jwb3JhdGUlMjBidXNpbmVzcyUyMG1lZXRpbmclMjBwcm9mZXNzaW9uYWx8ZW58MXx8fHwxNzcxNTc5NzQ5fDA&ixlib=rb-4.1.0&q=80&w=1080"
+                  src="https://eatm.in/wp-content/uploads/2018/10/WhatsApp_Image_2022-09-22_at_9.28.57_AM-removebg-preview.png"
                   alt="Professional Meeting"
                   className="w-full h-96 object-cover"
                 />
@@ -141,7 +141,7 @@ export function HomePage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="rounded-xl overflow-hidden shadow-lg">
               <ImageWithFallback
-                src="https://images.unsplash.com/photo-1761469354504-8d14b3a33757?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1bml2ZXJzaXR5JTIwc3R1ZGVudHMlMjBmb3JtYWwlMjBhdHRpcmUlMjBncmFkdWF0aW9ufGVufDF8fHx8MTc3MTYwNDkxN3ww&ixlib=rb-4.1.0&q=80&w=1080"
+                src="https://i.ytimg.com/vi/hWKq9Cmz8s8/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AO"
                 alt="Students"
                 className="w-full h-96 object-cover"
               />

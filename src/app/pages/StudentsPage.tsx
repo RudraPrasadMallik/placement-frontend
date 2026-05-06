@@ -115,7 +115,7 @@ export function StudentsPage() {
       submitData.append("fullName", formData.fullName);
       submitData.append("email", formData.email);
       submitData.append("phone", formData.phone);
-      submitData.append("rollNumber", formData.rollNumber);
+      submitData.append("regd.Number", formData.rollNumber);
       submitData.append("department", formData.department);
       submitData.append("year", formData.year);
       submitData.append("cgpa", formData.cgpa);
@@ -310,7 +310,7 @@ export function StudentsPage() {
 
                 <div>
                   <label className="block text-slate-700 mb-2">
-                    Roll Number <span className="text-red-500">*</span>
+                    Rigistrationnumber <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -499,10 +499,10 @@ export function StudentsPage() {
                   Before the Placement Drive
                 </h3>
                 <ul className="space-y-2 text-slate-600 ml-7">
-                  <li>â€¢ Keep your resume updated and error-free</li>
-                  <li>â€¢ Maintain professional email communication</li>
-                  <li>â€¢ Attend pre-placement talks regularly</li>
-                  <li>â€¢ Practice aptitude and technical questions</li>
+                  <li> Keep your resume updated and error-free</li>
+                  <li> Maintain professional email communication</li>
+                  <li> Attend pre-placement talks regularly</li>
+                  <li> Practice aptitude and technical questions</li>
                 </ul>
               </div>
 
@@ -512,10 +512,10 @@ export function StudentsPage() {
                   During the Placement Drive
                 </h3>
                 <ul className="space-y-2 text-slate-600 ml-7">
-                  <li>â€¢ Dress formally and professionally</li>
-                  <li>â€¢ Be punctual for all rounds</li>
-                  <li>â€¢ Carry multiple copies of your resume</li>
-                  <li>â€¢ Stay confident and communicate clearly</li>
+                  <li> Dress formally and professionally</li>
+                  <li> Be punctual for all rounds</li>
+                  <li> Carry multiple copies of your resume</li>
+                  <li> Stay confident and communicate clearly</li>
                 </ul>
               </div>
 
@@ -525,10 +525,10 @@ export function StudentsPage() {
                   Important Points
                 </h3>
                 <ul className="space-y-2 text-slate-600 ml-7">
-                  <li>â€¢ One student can apply to multiple companies</li>
-                  <li>â€¢ Once selected, you cannot participate further</li>
-                  <li>â€¢ Maintain discipline throughout the process</li>
-                  <li>â€¢ Any misconduct will lead to disqualification</li>
+                  <li> One student can apply to multiple companies</li>
+                  <li> Once selected, you cannot participate further</li>
+                  <li> Maintain discipline throughout the process</li>
+                  <li> Any misconduct will lead to disqualification</li>
                 </ul>
               </div>
             </div>

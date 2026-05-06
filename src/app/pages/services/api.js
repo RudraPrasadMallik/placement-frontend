@@ -1,8 +1,6 @@
 // Central API Service
-const BASE_URL = 'https://placement-backend-1-9jfq.onrender.com';
-//'http://localhost:8080/api';
-
- 
+const BASE_URL =
+'http://localhost:8080/api';
 
 
 // API endpoints configuration
